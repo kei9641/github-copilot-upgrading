@@ -12,29 +12,31 @@ class DictMatch(object):
         # If all fails we will always have default values
         configuration = self.defaults()
 
-        try:
-            if self.config == None or isfile(self.config) == False:
-                configuration = self.defaults()
-                return configuration
-
-        except TypeError:
-            # if we are getting a ready-to-go dict then we still try
-            # to do our little translation-and-map thing and if that
-            # comes out as empty, then we assume keys are already
-            # translated
-            if type(self.config) is dict:
+        # dict 타입 입력 처리
+        if isinstance(self.config, dict):
+            try:
                 configuration = self.key_matcher(self.config, return_empty=True)
                 if not configuration:
                     configuration = self.defaults(self.config)
                 return configuration
+            except Exception as error:
+                raise OptionConfigurationError(error)
 
-            # we could get an object that is dict-like but type(object)
-            # doesn't recognize it as a dict
-            else:
+        # dict-like 객체(타입은 dict이 아니지만 키/값 지원)
+        # 단, str/bytes/path-like은 제외
+        if hasattr(self.config, '__getitem__') and not isinstance(self.config, (str, bytes)):
+            try:
                 configuration = self.key_matcher(self.config)
                 return configuration
+            except Exception as error:
+                raise OptionConfigurationError(error)
 
-        else: # this will get executed *only* if we are seeing a file
+        # 파일 경로(str, bytes, os.PathLike) 또는 None 처리
+        import os
+        if self.config is None or isinstance(self.config, (str, bytes, os.PathLike)):
+            if self.config is None or not isfile(self.config):
+                configuration = self.defaults()
+                return configuration
             try:
                 parser = ConfigParser()
                 parser.read(self.config)
@@ -42,7 +44,10 @@ class DictMatch(object):
                 configuration = self.key_matcher(file_options)
             except Exception as error:
                 raise OptionConfigurationError(error)
+            return configuration
 
+        # 그 외 타입은 기본값 반환
+        configuration = self.defaults()
         return configuration
 
 
