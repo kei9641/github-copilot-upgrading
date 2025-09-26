@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "guachi"
+version = "0.0.6"
+description = "Global, persistent configurations as dictionaries"
+authors = [
+    { name = "Alfredo Deza", email = "alfredodeza@gmail.com" }
+]
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.7"
+dependencies = [
+    "pytest"
+]
+
+[project.urls]
+Homepage = "https://github.com/kei9641/github-copilot-upgrading"
+
+[tool.setuptools.packages.find]
+where = ["guachi"]
+
+[tool.setuptools]
+include-package-data = true
